@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using static Bankeverwaltungconsole.Bankingmanger;
 
 namespace Bankeverwaltungconsole
@@ -78,6 +79,13 @@ namespace Bankeverwaltungconsole
             {
                 return false;
             }
+        }
+
+        public string getAccountInfos(Bank bank)
+        {
+            bool IsShared = bank.GetCustomersForAccount(AccountNumber).Count > 1;
+            string shardstatus = IsShared ? "Geteiltes Konto" : "Eigenes Konto";
+            return $"{shardstatus}, Kontonummer: {AccountNumber}, Type: {AccountType}";
         }
 
         public void PrintTransactions()

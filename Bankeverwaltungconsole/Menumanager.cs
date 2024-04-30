@@ -124,14 +124,17 @@ namespace Bankeverwaltungconsole
             }
         }
 
-        internal int ReadMenuSelection(List<string> options)
+        internal int ReadMenuSelection(List<string> options,bool backoption = false,string addtext = null)
         {
             int selectedIndex = 0;
             ConsoleKeyInfo key;
-
+            if (backoption)
+            {
+                options.Add("Zurück");
+            }
             do
             {
-                header.DisplayHeader();
+                header.DisplayHeader(addtext);
                 Console.WriteLine("Navigieren Sie mit den Pfeiltasten und wählen Sie mit Enter.\n");
                 for (int i = 0; i < options.Count; i++)
                 {
@@ -185,28 +188,33 @@ namespace Bankeverwaltungconsole
         {
             Console.Clear();
             Console.WriteLine("Banking System Aufgabe von Florian Wielga");
+            Console.WriteLine();
 
             if (bank != null)
             {
                 Console.WriteLine($"Bank: {bank.Name}");
+                Console.WriteLine($"Bankleitzahl: {bank.BankCode}");
+                Console.WriteLine();
             }
 
             if (customer != null)
             {
                 Console.WriteLine($"Kunde: {customer.Name}");
+                Console.WriteLine();
             }
 
             if (account != null)
             {
                 Console.WriteLine($"Konto: {account.AccountNumber}");
+                Console.WriteLine($"IBAN: {account.IBAN}");
+                Console.WriteLine();
             }
 
             if (!string.IsNullOrEmpty(additionalInfo))
             {
                 Console.WriteLine(additionalInfo);
+                Console.WriteLine();
             }
-
-            Console.WriteLine();
         }
     }
 }

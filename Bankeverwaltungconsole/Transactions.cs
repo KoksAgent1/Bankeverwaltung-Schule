@@ -32,11 +32,12 @@ namespace Bankeverwaltungconsole
         }
 
         [JsonConstructor]
-        public Transaction(decimal amount, Bankingmanger.Transaktiontype type, DateTime date, bool receiver)
+        public Transaction(decimal amount, Bankingmanger.Transaktiontype type, string tranfertoIBAN, DateTime date, bool receiver)
         {
             Amount = amount;
             Date = date;
             Type = type;
+            this.tranfertoIBAN = tranfertoIBAN;
             Receiver = receiver;
         }
 
