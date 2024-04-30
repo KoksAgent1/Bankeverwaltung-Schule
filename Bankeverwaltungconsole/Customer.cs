@@ -1,25 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Bankeverwaltungconsole
 {
     internal class Customer
     {
+        public string Id { get; set; }
         public string Name { get; set; }
-        public List<Account> Accounts { get; set; }
 
-        public Customer(string name)
+        public Customer(string name,string Id)
         {
             Name = name;
-            Accounts = new List<Account>();
-        }
-
-        public void AddAccount(Account account)
-        {
-            Accounts.Add(account);
+            this.Id = Id;
         }
     }
 

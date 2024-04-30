@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace Bankeverwaltungconsole
 {
@@ -12,6 +9,8 @@ namespace Bankeverwaltungconsole
         public DateTime Date { get; private set; }
         public Bankingmanger.Transaktiontype Type { get; private set; }
 
+        public bool Receiver { get; private set; }
+
         public string tranfertoIBAN { get; private set; }
 
         public Transaction(decimal amount, Bankingmanger.Transaktiontype type)
@@ -19,19 +18,42 @@ namespace Bankeverwaltungconsole
             Amount = amount;
             Date = DateTime.Now;
             Type = type;
+            Receiver = false;
+
         }
 
-        public Transaction(decimal amount, Bankingmanger.Transaktiontype type,string IBAN)
+        public Transaction(decimal amount, Bankingmanger.Transaktiontype type, string IBAN,bool receiver)
         {
             Amount = amount;
             Date = DateTime.Now;
             Type = type;
             tranfertoIBAN = IBAN;
+            Receiver = receiver; 
+        }
+
+        [JsonConstructor]
+        public Transaction(decimal amount, Bankingmanger.Transaktiontype type, DateTime date, bool receiver)
+        {
+            Amount = amount;
+            Date = date;
+            Type = type;
+            Receiver = receiver;
         }
 
         public override string ToString()
         {
-            return $"Type: {Type}, Betrag: {Amount}€, Datum: {Date}";
+            if (Receiver && !string.IsNullOrEmpty(tranfertoIBAN))
+            {
+                return $"Type: {Type}, Betrag: {Amount}€, Datum: {Date} Erhalten von: {tranfertoIBAN}";
+            }else if (!Receiver && !string.IsNullOrEmpty(tranfertoIBAN))
+            {
+                return $"Type: {Type}, Betrag: {Amount}€, Datum: {Date} Gesendet an: {tranfertoIBAN}";
+            }
+            else
+            {
+                return $"Type: {Type}, Betrag: {Amount}€, Datum: {Date}";
+            }
+            
         }
     }
 

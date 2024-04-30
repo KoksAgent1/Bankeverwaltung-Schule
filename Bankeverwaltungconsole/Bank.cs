@@ -1,8 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Bankeverwaltungconsole.Bankingmanger;
 
 namespace Bankeverwaltungconsole
@@ -11,19 +9,50 @@ namespace Bankeverwaltungconsole
     {
         public string Name { get; set; }
         public string BankCode { get; set; }  // Bankleitzahl
-        private int nextAccountNumber = 1;
+        public int nextAccountNumber { get; set; }
         public List<Customer> Customers { get; set; }
+
+        public List<Account> Accounts { get; set; }
+        public List<AccountCustomerMapping> AccountCustomerMappings { get; set; }
 
         public Bank(string name, string bankCode)
         {
             Name = name;
             BankCode = bankCode;
             Customers = new List<Customer>();
+            Accounts = new List<Account>();
+            AccountCustomerMappings = new List<AccountCustomerMapping>();
+            nextAccountNumber = 1;
+        }
+
+        [JsonConstructor]
+        public Bank(string name, string bankCode,int nextAccountNumber, List<AccountCustomerMapping> accountCustomerMappings,List<Customer> customers, List<Account> accounts)
+        {
+            Name = name;
+            BankCode = bankCode; 
+            this.Customers = customers ?? new List<Customer>();
+            this.AccountCustomerMappings = accountCustomerMappings ?? new List<AccountCustomerMapping>();
+            this.nextAccountNumber = nextAccountNumber;
+            this.Accounts = accounts ?? new List<Account>();
         }
 
         public void AddCustomer(Customer customer)
         {
             Customers.Add(customer);
+        }
+
+        public void AddCustomerToAccount(string accountId, string customerId)
+        {
+            var mapping = AccountCustomerMappings.FirstOrDefault(m => m.AccountId == accountId);
+            if (mapping == null)
+            {
+                mapping = new AccountCustomerMapping { AccountId = accountId };
+                AccountCustomerMappings.Add(mapping);
+            }
+            if (!mapping.CustomerIds.Contains(customerId))
+            {
+                mapping.CustomerIds.Add(customerId);
+            }
         }
 
         public Customer FindCustomer(string name)
@@ -40,13 +69,14 @@ namespace Bankeverwaltungconsole
         // Erstellt ein neues Konto und fügt es einem Kunden hinzu
         public void CreateAccountForCustomers(List<Customer> customerNames, AccountType accountType, decimal initialBalance)
         {
-            var account = new Account(GenerateAccountNumber(), accountType, initialBalance,this);
+            var account = new Account(GenerateAccountNumber(), accountType, initialBalance, this);
+            Accounts.Add(account);
             foreach (var customer in customerNames)
             {
                 if (customer != null)
                 {
-                    customer.AddAccount(account);
-                    account.AddOwner(customer);
+                    
+                    AddCustomerToAccount(account.AccountNumber,customer.Id);
                 }
             }
         }
@@ -56,7 +86,7 @@ namespace Bankeverwaltungconsole
         {
             foreach (var customer in Customers)
             {
-                foreach (var account in customer.Accounts)
+                foreach (var account in Accounts)
                 {
                     if (account.IBAN == iban)
                     {
@@ -66,6 +96,34 @@ namespace Bankeverwaltungconsole
             }
             return null;
         }
+
+        public List<Customer> GetCustomersForAccount(string accountId)
+        {
+            var mapping = AccountCustomerMappings.FirstOrDefault(m => m.AccountId == accountId);
+            if (mapping != null)
+            {
+                return Customers.Where(c => mapping.CustomerIds.Contains(c.Id)).ToList();
+            }
+            return new List<Customer>();
+        }
+
+        public List<Account> GetAccountsForCustomer(string customerId)
+        {
+            var accountIds = AccountCustomerMappings
+                .Where(m => m.CustomerIds.Contains(customerId))
+                .Select(m => m.AccountId)
+                .Distinct()
+                .ToList();
+
+            if (!accountIds.Any())
+            {
+                return new List<Account>();
+            }
+
+            return Accounts.Where(a => accountIds.Contains(a.AccountNumber)).ToList();
+        }
+
+
     }
 
 }

@@ -1,8 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Bankeverwaltungconsole.Bankingmanger;
 
 namespace Bankeverwaltungconsole
@@ -14,63 +13,70 @@ namespace Bankeverwaltungconsole
         public decimal Balance { get; private set; }
         public string IBAN { get; private set; }
         public List<Transaction> Transactions { get; private set; }
-        public List<Customer> Owners { get; private set; }  // Änderung hier
-        private Bank Bank { get; set; }
 
         public Account(string accountNumber, AccountType accountType, decimal initialBalance, Bank bank)
         {
             AccountNumber = accountNumber;
             AccountType = accountType;
             Balance = initialBalance;
-            Bank = bank;
             Transactions = new List<Transaction>();
-            Owners = new List<Customer>();  // Liste von Kunden
-            IBAN = $"DE{new Random().Next(10, 99)}{bank.BankCode}{accountNumber}";  // Einfache Simulation einer IBAN
+            IBAN = $"DE{new Random().Next(10, 99)}{bank.BankCode}{accountNumber}";
         }
 
-        public void AddOwner(Customer customer)
+        [JsonConstructor]
+        public Account(string accountNumber, AccountType accountType, decimal balance, List<Transaction> transactions, string IBAN)
         {
-            Owners.Add(customer);
+            AccountNumber = accountNumber;
+            AccountType = accountType;
+            Balance = balance;
+            Transactions = transactions;
+            this.IBAN = IBAN;
         }
-
-        public string GetOwnerNames()
-        {
-            return string.Join(", ", Owners.Select(o => o.Name));
-        }
-
-        public void Deposit(decimal amount)
+        
+        public void Deposit(decimal amount,bool isTransfer = false, string Iban = null)
         {
             Balance += amount;
-            Transactions.Add(new Transaction(amount, Bankingmanger.Transaktiontype.Deposit));
-            Console.WriteLine($"Eingezahlt: {amount}€, Neuer Kontostand: {Balance}€");
+            if (!isTransfer)
+            {
+                Transactions.Add(new Transaction(amount, Bankingmanger.Transaktiontype.Deposit)); 
+                Console.WriteLine($"Eingezahlt: {amount}€, Neuer Kontostand: {Balance}€");
+            }
+            else
+            {
+                Transactions.Add(new Transaction(amount, Bankingmanger.Transaktiontype.Transfer,Iban,true));
+            }
+            
         }
 
-        public bool Withdraw(decimal amount)
+        public bool Withdraw(decimal amount,bool isTransfer = false)
         {
             if (Balance >= amount)
             {
                 Balance -= amount;
-                Transactions.Add(new Transaction(amount, Bankingmanger.Transaktiontype.Withdrawal));
-                Console.WriteLine($"Abgehoben: {amount}€, Verbleibender Kontostand: {Balance}€");
+                if (!isTransfer)
+                {
+                    Transactions.Add(new Transaction(amount, Bankingmanger.Transaktiontype.Withdrawal)); 
+                    Console.WriteLine($"Abgehoben: {amount}€, Verbleibender Kontostand: {Balance}€");
+                }
+                
                 return true;
             }
             return false;
         }
 
-        public bool Transfer(string ibanTo, decimal amount)
+        public bool Transfer(string ibanTo, decimal amount,Bank bank)
         {
-            Account targetAccount = Bank.FindAccountByIBAN(ibanTo);
-            if (targetAccount != null && this.Withdraw(amount))
+            Account targetAccount = bank.FindAccountByIBAN(ibanTo);
+            if (targetAccount != null && this.Withdraw(amount,true))
             {
-                targetAccount.Deposit(amount);
-                Transactions.Add(new Transaction(amount, Bankingmanger.Transaktiontype.Transfer,ibanTo));
+                
+                targetAccount.Deposit(amount,true,IBAN);
+                Transactions.Add(new Transaction(amount, Bankingmanger.Transaktiontype.Transfer, ibanTo,false));
                 return true;
-                Console.WriteLine($"Transfer of {amount}€ to IBAN {ibanTo} successful.");
             }
             else
             {
                 return false;
-                Console.WriteLine("Transfer failed: Account not found or insufficient funds.");
             }
         }
 
