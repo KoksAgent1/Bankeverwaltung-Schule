@@ -90,7 +90,7 @@ namespace Bankeverwaltungconsole
             header.DisplayHeader("Alle Konten");
             foreach (var account in bank.GetAccountsForCustomer(customer.Id))
             {
-                Console.WriteLine($"Kontonummer: {account.AccountNumber}, Type: {account.AccountType}, Kontostand: {account.Balance}");
+                Console.WriteLine(account.getAccountInfos(bank));
             }
             menu.Backtomenu();
         }
@@ -141,10 +141,13 @@ namespace Bankeverwaltungconsole
                 return;
             }
             List<Account> accountIBANs = bank.GetAccountsForCustomer(customer.Id);
-            Console.WriteLine("\nBitte wähle ein Konto:");
-            int selectedIndex = menu.ReadMenuSelection(accountIBANs.Select(a => $"Konto: {a.IBAN} - {a.AccountType}").ToList());
+            int selectedIndex = menu.ReadMenuSelection(accountIBANs.Select(a => a.getAccountInfos(bank)).ToList(),true, "Bitte wähle ein Konto:");
 
-            Account selectedAccount = bank.GetAccountsForCustomer(customer.Id)[selectedIndex];
+            if (selectedIndex == accountIBANs.Count)
+            {
+                return;
+            }
+            Account selectedAccount = accountIBANs[selectedIndex];
             header.account = selectedAccount;
             menu.TransactionMenu(selectedAccount);
         }
@@ -220,14 +223,7 @@ namespace Bankeverwaltungconsole
 
                 if (otherAccounts.Any())
                 {
-                    Console.WriteLine("Wählen Sie ein Zielkonto aus:");
-                    for (int i = 0; i < otherAccounts.Count; i++)
-                    {
-                        Console.WriteLine($"{i + 1}. Konto: {otherAccounts[i].IBAN} - {otherAccounts[i].AccountType}");
-                    }
-                    Console.WriteLine($"{otherAccounts.Count + 1}. Abbrechen");
-
-                    int chosenIndex = menu.ReadMenuSelection(otherAccounts.Select(a => $"Konto: {a.IBAN} - {a.AccountType}").ToList()) + 1;
+                    int chosenIndex = menu.ReadMenuSelection(otherAccounts.Select(a => a.getAccountInfos(bank)).ToList(),true, "Wählen Sie ein Zielkonto aus:") + 1;
                     if (chosenIndex == otherAccounts.Count + 1)
                     {
                         return; // Benutzer wählt Abbrechen
