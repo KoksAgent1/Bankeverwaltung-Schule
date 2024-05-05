@@ -87,8 +87,17 @@ namespace Bankeverwaltungconsole
         internal void ListAccounts(Customer customer)
         {
             Console.Clear();
+            var accounts = bank.GetAccountsForCustomer(customer.Id);
+
+            if (accounts.Count == 0)
+            {
+                header.DisplayHeader("Keine Konten vorhanden");
+                menu.Backtomenu();
+                return;
+            }
+
             header.DisplayHeader("Alle Konten");
-            foreach (var account in bank.GetAccountsForCustomer(customer.Id))
+            foreach (var account in accounts)
             {
                 Console.WriteLine(account.getAccountInfos(bank));
             }
@@ -209,7 +218,6 @@ namespace Bankeverwaltungconsole
 
         internal void PerformTransfer(Account account)
         {
-            Console.Clear();
             header.DisplayHeader();
             Console.WriteLine("Möchten Sie das Geld auf ein anderes eigenes Konto überweisen? (ja/nein)");
             string response = Console.ReadLine().Trim().ToLower();
@@ -256,7 +264,6 @@ namespace Bankeverwaltungconsole
                     ibanTo = Console.ReadLine().Trim();
                 }
             }
-            Console.Clear();
             header.DisplayHeader();
             Console.WriteLine("Geben Sie den Überweisungsbetrag ein:");
             if (!decimal.TryParse(Console.ReadLine(), out decimal amount) || amount <= 0)
@@ -281,7 +288,6 @@ namespace Bankeverwaltungconsole
 
         internal void ShowTransactions(Account account)
         {
-            Console.Clear();
             header.DisplayHeader();
             Console.WriteLine($"\nAlle Transaktion vom Konto {account.AccountNumber}:");
             account.PrintTransactions();

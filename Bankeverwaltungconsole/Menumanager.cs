@@ -207,6 +207,7 @@ namespace Bankeverwaltungconsole
             {
                 Console.WriteLine($"Konto: {account.AccountNumber}");
                 Console.WriteLine($"IBAN: {account.IBAN}");
+                Console.WriteLine($"Kontostand: {account.Balance} €");
                 Console.WriteLine();
             }
 
