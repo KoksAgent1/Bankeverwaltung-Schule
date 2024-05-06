@@ -190,6 +190,7 @@ namespace Bankeverwaltungconsole
             }
             account.Deposit(amount);
             Datastorage.SaveData(bank);
+            header.account = account;
             Console.WriteLine($"Einzahlung erfolgreich: {amount}€");
             menu.Backtomenu();
         }
@@ -209,6 +210,7 @@ namespace Bankeverwaltungconsole
             }
             else
             {
+                header.account = account;
                 Datastorage.SaveData(bank);
                 Console.WriteLine($"Abhebung erfolgreich: {amount}€");
 
@@ -276,6 +278,7 @@ namespace Bankeverwaltungconsole
             if (account.Transfer(ibanTo, amount,bank))
             {
                 Datastorage.SaveData(bank);
+                header.account = account;
                 Console.WriteLine($"Überweisung von {amount}€ an {ibanTo} wurde erfolgreich durchgeführt.");
                 menu.Backtomenu();
             }
